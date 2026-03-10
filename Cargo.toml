@@ -1,0 +1,26 @@
+[package]
+name = "zeta-quantum"
+version = "0.4.0"
+edition = "2021"
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "zeta-quantum-server"
+path = "src/bin/zeta-quantum-server.rs"
+
+[dependencies]
+anyhow = "1"
+axum = { version = "0.8", features = ["macros"] }
+chrono = { version = "0.4", features = ["serde"] }
+nalgebra = "0.33"
+ordered-float = "4"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tower-http = { version = "0.6", features = ["compression-full", "timeout", "trace"] }
+utoipa = { version = "5", features = ["axum_extras"] }
+utoipa-axum = "0.2"
