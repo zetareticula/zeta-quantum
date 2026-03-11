@@ -42,7 +42,10 @@ pub fn get_cached_path(qpu: &QPU, start: u32, end: u32) -> Option<Arc<Vec<u32>>>
     end.hash(&mut h);
     let key = h.finish();
 
-    PATH_CACHE.lock().ok().and_then(|mut cache| cache.get(&key).cloned())
+    PATH_CACHE
+        .lock()
+        .ok()
+        .and_then(|mut cache| cache.get(&key).cloned())
 }
 
 pub fn put_cached_path(qpu: &QPU, start: u32, end: u32, path: Vec<u32>) {

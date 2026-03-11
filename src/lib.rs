@@ -13,6 +13,7 @@ pub mod qpu;
 pub mod radiative_entropy;
 
 pub use bms::{BMSObservable, EscapeRoute};
+pub use error::{ZetaError, ZetaResult};
 pub use flux_holonomy::{compute_flux_sector, FluxSector};
 pub use nonlocal_dynamics::{
     evolve_nonlocal_lindblad, reduce_to_subsystem, von_neumann_entropy, EntropicSubsystem,
@@ -20,7 +21,6 @@ pub use nonlocal_dynamics::{
 pub use phi_ir::{PhiCircuit, PhiElement, WeylGen};
 pub use qpu::{Modality, QPU};
 pub use radiative_entropy::RadiativeVisibility;
-pub use error::{ZetaError, ZetaResult};
 
 use nalgebra::DMatrix;
 use std::collections::HashMap;
@@ -74,8 +74,7 @@ impl QuantumQuantizer {
 
     fn analyze_nonlocal_dynamics(&self, dt: f64, dissipator: f64) -> EntropicSubsystem {
         let rho_full = DMatrix::identity(4, 4);
-        let h_nonlocal =
-            DMatrix::from_fn(4, 4, |i, j| if i % 2 != j % 2 { 0.1 } else { 0.0 });
+        let h_nonlocal = DMatrix::from_fn(4, 4, |i, j| if i % 2 != j % 2 { 0.1 } else { 0.0 });
         let rho_evolved = evolve_nonlocal_lindblad(&rho_full, &h_nonlocal, dissipator, dt);
         reduce_to_subsystem(&rho_evolved, 1)
     }
@@ -88,7 +87,11 @@ impl QuantumQuantizer {
         compute_flux_sector(&proj1, &proj2, &flux_op, &holonomy_mat)
     }
 
-    fn analyze_radiative_visibility(&self, bms: &BMSObservable, integrated_obstruction: f64) -> RadiativeVisibility {
+    fn analyze_radiative_visibility(
+        &self,
+        bms: &BMSObservable,
+        integrated_obstruction: f64,
+    ) -> RadiativeVisibility {
         RadiativeVisibility::from_bms_and_entropy(bms, integrated_obstruction)
     }
 

@@ -1,7 +1,7 @@
 // zeta-quantum/src/nonlocal_dynamics.rs (updated for full subsystem impl)
 
-use nalgebra::DMatrix;
 use nalgebra::linalg::SymmetricEigen;
+use nalgebra::DMatrix;
 use std::f64::consts::LN_2;
 
 #[derive(Debug, Clone)]

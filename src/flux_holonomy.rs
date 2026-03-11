@@ -35,7 +35,11 @@ pub fn compute_flux_sector(
     let holonomy_raw = holonomy_matrix.trace(); // Tr P exp(∮ A)
 
     let flux = if flux_raw.abs() < EPS { 0.0 } else { flux_raw };
-    let holonomy = if holonomy_raw.abs() < EPS { 0.0 } else { holonomy_raw };
+    let holonomy = if holonomy_raw.abs() < EPS {
+        0.0
+    } else {
+        holonomy_raw
+    };
 
     // Edge-mode lower bound witness (toy): ensure non-negative and finite.
     let entanglement_witness = (flux.abs() * 0.5).max(0.0);
