@@ -1,8 +1,16 @@
 [package]
 name = "zeta-quantum"
-version = "0.4.0"
+version = "0.6.0"
 edition = "2021"
 rust-version = "1.75"
+
+description = "Quantum compiler + API service using Phi-IR (Affine Weyl words), modality-aware QPU routing, and obstruction cost S_X with BMS observability."
+license = "MIT"
+repository = "https://github.com/zetareticula/zeta-quantum"
+homepage = "https://github.com/zetareticula/zeta-quantum"
+readme = "README.md"
+keywords = ["quantum", "compiler", "axum", "qpu", "simulation"]
+categories = ["science", "compilers", "simulation", "web-programming::http-server"]
 
 [lib]
 path = "src/lib.rs"
