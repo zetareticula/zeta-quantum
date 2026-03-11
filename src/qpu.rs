@@ -3,6 +3,8 @@ use std::collections::{BinaryHeap, HashMap, HashSet};
 
 use ordered_float::OrderedFloat;
 
+use crate::cache::{get_cached_path, put_cached_path};
+
 #[derive(Clone, Copy, PartialEq, Debug)]
 #[repr(u8)]
 pub enum Modality {
@@ -22,9 +24,9 @@ pub struct QPU {
 impl QPU {
     pub fn new(modality: Modality, calibration_ts: String) -> Self {
         Self {
-            coupling_map: HashMap::new(),
+            coupling_map: HashMap::with_capacity(64),
             modality,
-            positions: HashMap::new(),
+            positions: HashMap::with_capacity(64),
             calibration_ts,
         }
     }
@@ -45,10 +47,14 @@ impl QPU {
             return vec![start];
         }
 
-        let mut dist: HashMap<u32, f64> = HashMap::new();
-        let mut prev: HashMap<u32, u32> = HashMap::new();
+        if let Some(path) = get_cached_path(self, start, end) {
+            return (*path).clone();
+        }
+
+        let mut dist: HashMap<u32, f64> = HashMap::with_capacity(self.coupling_map.len());
+        let mut prev: HashMap<u32, u32> = HashMap::with_capacity(self.coupling_map.len());
         let mut heap: BinaryHeap<Reverse<(OrderedFloat<f64>, u32)>> = BinaryHeap::new();
-        let mut visited: HashSet<u32> = HashSet::new();
+        let mut visited: HashSet<u32> = HashSet::with_capacity(self.coupling_map.len());
 
         dist.insert(start, 0.0);
         heap.push(Reverse((OrderedFloat(0.0), start)));
@@ -91,6 +97,8 @@ impl QPU {
         }
         path.push(start);
         path.reverse();
+
+        put_cached_path(self, start, end, path.clone());
         path
     }
 

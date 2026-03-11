@@ -1,6 +1,7 @@
 // zeta-quantum/src/nonlocal_dynamics.rs (updated for full subsystem impl)
 
 use nalgebra::DMatrix;
+use nalgebra::linalg::SymmetricEigen;
 use std::f64::consts::LN_2;
 
 #[derive(Debug, Clone)]
@@ -47,17 +48,37 @@ pub fn reduce_to_subsystem(rho_full: &DMatrix<f64>, subsystem_qubits: usize) -> 
 }
 
 pub fn von_neumann_entropy(rho: &DMatrix<f64>) -> f64 {
-    // Toy entropy: use diagonal as a proxy distribution (keeps deps light and stable).
-    let mut s = 0.0;
-    let tr = rho.trace();
-    if tr <= 0.0 {
+    // Numerically stable vN entropy for real symmetric density matrices.
+    //
+    // We compute eigenvalues λ_i of (ρ + ρ^T)/2, clamp small negatives from
+    // floating-point noise, renormalize, and compute -Tr(ρ log ρ).
+    if rho.nrows() == 0 || rho.ncols() == 0 {
         return 0.0;
     }
-    for i in 0..rho.nrows().min(rho.ncols()) {
-        let mut p = rho[(i, i)] / tr;
-        if p < 0.0 {
-            p = 0.0;
-        }
+    if rho.nrows() != rho.ncols() {
+        return 0.0;
+    }
+
+    let sym = (rho + rho.transpose()) * 0.5;
+    let tr = sym.trace();
+    if !tr.is_finite() || tr <= 0.0 {
+        return 0.0;
+    }
+
+    let eig = SymmetricEigen::new(sym);
+    let eps = 1e-15;
+    let mut sum = 0.0;
+    for &lambda in eig.eigenvalues.iter() {
+        let clamped = if lambda < eps { 0.0 } else { lambda };
+        sum += clamped;
+    }
+    if sum <= 0.0 {
+        return 0.0;
+    }
+
+    let mut s = 0.0;
+    for &lambda in eig.eigenvalues.iter() {
+        let p = if lambda < eps { 0.0 } else { lambda / sum };
         if p > 0.0 {
             s -= p * p.ln();
         }

@@ -65,7 +65,6 @@ pub fn probe_gravitational_memory(
 ) -> (CohomologicalEntropy, BMSObservable) {
     // Compute full intrinsic S_X + redundancy dim (toy model: count Affine gens)
     let mut r_total = 0;
-    let mut sx_total = 0.0;
 
     for elem in &circ.elements {
         let r = elem
@@ -74,14 +73,9 @@ pub fn probe_gravitational_memory(
             .filter(|g| matches!(g, crate::phi_ir::WeylGen::Affine(_)))
             .count();
         r_total += r;
-
-        let phys_cost = if elem.targets.len() == 2 {
-            qpu.gate_cost(elem.targets[0], elem.targets[1])
-        } else {
-            0.0
-        };
-        sx_total += phys_cost;
     }
+
+    let sx_total = crate::cost::integrated_obstruction(circ, qpu);
 
     let entropy = CohomologicalEntropy {
         r_gamma: r_total,
