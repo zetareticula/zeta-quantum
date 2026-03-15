@@ -23,8 +23,12 @@ Real-time, calibration-aware compilation with Affine Weyl IR + salience-driven f
 
 ## Status
 
-- Library crate: `zeta-quantum`
-- Server binary: `zeta-quantum-server` (Axum)
+| | |
+|---|---|
+| Latest release | `v0.6.1` — [crates.io](https://crates.io/crates/zeta-quantum) |
+| Library crate | `zeta-quantum` |
+| Server binary | `zeta-quantum-server` (Axum) |
+| Tests | 13 unit + integration + doc-tests |
 
 ## Installation
 
@@ -38,18 +42,27 @@ cargo add zeta-quantum
 use std::collections::HashMap;
 use zeta_quantum::{EscapeRoute, Modality, PhiCircuit, PhiElement, QuantumQuantizer};
 
+// Build calibration map: "<qA>-<qB>" -> CNOT error rate
 let mut calibration = HashMap::new();
 calibration.insert("0-1".to_string(), 0.005);
 calibration.insert("1-2".to_string(), 0.004);
 
 let mut q = QuantumQuantizer::new(Modality::Superconducting, &calibration, "demo".into());
 
+// Build a circuit using helper constructors
 let mut circ = PhiCircuit::default();
-circ.elements.push(PhiElement::h(0));
-circ.elements.push(PhiElement::cnot(0, 2));
+circ.elements.push(PhiElement::h(0));    // Hadamard on q0
+circ.elements.push(PhiElement::cnot(0, 2)); // CNOT q0 → q2
+
+// Or use single-gate circuit constructors
+let bell = {
+    let mut c = PhiCircuit::hadamard(0);
+    c.elements.push(PhiElement::cnot(0, 1));
+    c
+};
 
 let (_optimized, integrated_obstruction, bms) = q.quantize_with_bms(&circ, EscapeRoute::None)?;
-println!("S_X={integrated_obstruction}, decoded={:?}", bms.decoded_sx);
+println!("S_X={integrated_obstruction:.4}, decoded={:?}", bms.decoded_sx);
 # Ok::<(), anyhow::Error>(())
 ```
 
@@ -165,9 +178,31 @@ Example payload:
 
 ## Development workflow
 
-- `cargo test` to run tests
-- `cargo build --release --bin zeta-quantum-server` to build the server binary
-- `./target/release/zeta-quantum-server` to run the server
+```bash
+# Run all tests (13 unit + integration + doc-tests)
+cargo test
+
+# Lint
+cargo clippy --all-targets --all-features -- -D warnings
+
+# Format
+cargo fmt
+
+# Build optimised server binary
+cargo build --release --bin zeta-quantum-server
+
+# Run server
+./target/release/zeta-quantum-server
+```
+
+### Test coverage
+
+| Suite | Count |
+|---|---|
+| Unit (`src/`) | 9 |
+| Integration (`tests/`) | 4 |
+| Doc-tests | 2 |
+| **Total** | **15** |
 
 ## Performance
 
@@ -189,6 +224,34 @@ cargo build --release --bin zeta-quantum-server
 
 Then run `./target/release/zeta-quantum-server`.
 
+## Contributing
+
+1. Fork the repo and create a branch.
+2. Run `cargo fmt` and `cargo clippy` before committing.
+3. Add or update tests for any behavioural changes.
+4. Open a pull request against `main`.
+
+All contributions are subject to the [MIT License](LICENSE).
+
+## Changelog
+
+### v0.6.1
+- Added MIT license headers (Zeta Reticula Inc) to all Rust + Julia source files.
+- Added `cost` module unit tests and doc comments.
+- Fixed compile errors from accidental `pyo3` bindings in `error.rs` and `cost.rs`.
+- Fixed duplicate `Default` impl and stray inner doc comments in `phi_ir.rs`.
+- Cleaned unused imports and warnings across `flux_holonomy.rs`, `nonlocal_dynamics.rs`.
+
+### v0.6.0
+- Published to crates.io.
+- Added `cache.rs` (global LRU path cache), `cost.rs`, `error.rs`.
+- Numerically stable `von_neumann_entropy` via eigenvalue decomposition.
+- Axum API server with OpenAPI (`utoipa`), compression, timeout middleware.
+- GitHub Actions CI workflow (`fmt` + `clippy -D warnings` + `test`).
+- README badges (CI, crates.io, docs.rs, license, MSRV, edition, last commit).
+
 ## License
 
-See `LICENSE`.
+Copyright (c) 2026 **Zeta Reticula Inc**
+
+This project is licensed under the [MIT License](LICENSE).
