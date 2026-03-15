@@ -1,3 +1,6 @@
+//! Copyright (c) 2026 Zeta Reticula Inc
+//! Licensed under the MIT License. See LICENSE for details.
+
 use axum::{extract::State, http::StatusCode, response::IntoResponse, routing::post, Json, Router};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;

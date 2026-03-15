@@ -1,8 +1,12 @@
+# Copyright (c) 2026 Zeta Reticula Inc
+# Licensed under the MIT License. See LICENSE for details.
+
 module PhiCLI
 
 using Term
 using ..PhiIR
 using ..PhiQuantum  # your main module with compile
+using ..PhiQuantum: PhiCircuit
 
 export dashboard
 
@@ -28,4 +32,16 @@ function dashboard(circ::PhiCircuit, sx_per_gate::Vector{Float64})
     println("Highest 𝒮_X = $(maximum(sx_per_gate)) → auto-routed to lowest-noise sector\n")
 end
 
+# Main function to run the CLI
+function main()
+    println("Φ-Quantum CLI")
+    println("Usage: julia -i src/cli.jl <circuit_file> <qpu_file>")
+end
+
+# Run main function if this file is executed directly
+if abspath(PROGRAM_FILE) == abspath(@__FILE__)
+    main()
+end
+
 end # module
+

@@ -1,10 +1,21 @@
+//! Copyright (c) 2026 Zeta Reticula Inc
+//! Licensed under the MIT License. See LICENSE for details.
+
 use crate::phi_ir::PhiCircuit;
 use crate::qpu::QPU;
+
+/// BMS (Bondi-Metzner-Sachs) observables for gravitational memory
+/// These are the actual quantities that can be measured by gravitational wave detectors
+///
+/// This is the non-injective projection of the full quantum state to what can be observed
+///
+/// This is your exact statement: "H_micro → O_BMS"
+///
 
 /// Exact replica of your entropy definition
 pub type RedundancyDim = usize; // r([γ]) = dim R_X([γ]) ⊂ H^0(M_H, O)
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, utoipa::ToSchema)]
 pub struct CohomologicalEntropy {
     pub r_gamma: RedundancyDim, // intrinsic count
     pub sx: f64,                // Integrated Obstruction (our compiler value)

@@ -1,4 +1,9 @@
+//! Copyright (c) 2026 Zeta Reticula Inc
+//! Licensed under the MIT License. See LICENSE for details.
+
 use thiserror::Error;
+
+pub const EPS: f64 = 1e-12;
 
 /// Domain errors for the zeta-quantum compiler/runtime.
 #[derive(Debug, Error)]

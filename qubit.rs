@@ -1,8 +1,14 @@
+//! Copyright (c) 2026 Zeta Reticula Inc
+//! Licensed under the MIT License. See LICENSE for details.
+
 use std::collections::{BinaryHeap, HashMap};
 use std::cmp::Reverse;
 
+// Qubit and QPU structures for pathfinding
+
+/// Represents a physical qubit in the quantum processor.
 pub struct QubitNode {
-    pub id: u32,
+    pub id: u32, // Unique identifier for the qubit
     pub error_rate: f64, // The 1-qubit gate decoherence
 }
 
@@ -76,3 +82,24 @@ impl QPU {
         path
     }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_find_optimal_path() {
+        let mut coupling_map = HashMap::new();
+        coupling_map.insert(0, vec![(1, 0.01), (2, 0.02)]);
+        coupling_map.insert(1, vec![(2, 0.01)]);
+        coupling_map.insert(2, vec![]);
+
+        let qpu = QPU { coupling_map };
+
+        let path = qpu.find_optimal_path(0, 2);
+        assert_eq!(path, vec![0, 1, 2]);
+    }
+}
+
+

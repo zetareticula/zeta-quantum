@@ -1,5 +1,7 @@
-// zeta-quantum/src/lib.rs (updated integration)
+//! Copyright (c) 2026 Zeta Reticula Inc
+//! Licensed under the MIT License. See LICENSE for details.
 
+// zeta-quantum/src/lib.rs (updated integration)
 pub mod api;
 pub mod bms;
 pub mod cache;
@@ -25,51 +27,68 @@ pub use radiative_entropy::RadiativeVisibility;
 use nalgebra::DMatrix;
 use std::collections::HashMap;
 
+/// The main quantization engine that converts quantum circuits to the phi language
+///
+/// This engine takes a quantum circuit in the phi language and converts it to a format
+/// that can be executed on a quantum processing unit (QPU).
+///
+/// The quantization process involves:
+/// 1. Converting the phi circuit to a format suitable for the QPU
+/// 2. Optimizing the circuit for the specific QPU architecture
+/// 3. Calculating the integrated obstruction for the circuit
+/// 4. Returning the optimized circuit and the integrated obstruction
 #[derive(Debug)]
 pub struct QuantumQuantizer {
-    pub qpu: QPU,
-    pub calibration: HashMap<String, f64>,
+    pub qpu: QPU, // The quantum processing unit to use for quantization
+    pub calibration: HashMap<String, f64>, // Calibration data for the QPU
 }
 
+// The implementation of the QuantumQuantizer struct
 impl QuantumQuantizer {
+    // Constructor for the QuantumQuantizer struct
     pub fn new(
-        modality: Modality,
-        calibration: &HashMap<String, f64>,
-        calibration_ts: String,
+        modality: Modality,                 // The modality of the QPU
+        calibration: &HashMap<String, f64>, // Calibration data for the QPU
+        calibration_ts: String,             // Timestamp of the calibration data
     ) -> Self {
-        let mut qpu = QPU::new(modality, calibration_ts);
+        let mut qpu = QPU::new(modality, calibration_ts); // Create a new QPU with the given modality and calibration timestamp
 
         // Minimal coupling map bootstrap: parse keys like "0-1" => err
         for (k, &err) in calibration {
+            // Split the key by '-' and parse the two parts as u32
             if let Some((a, b)) = k.split_once('-') {
+                // Parse the two parts as u32
                 if let (Ok(a), Ok(b)) = (a.parse::<u32>(), b.parse::<u32>()) {
-                    qpu.add_coupling(a, b, err);
-                    qpu.add_coupling(b, a, err);
+                    qpu.add_coupling(a, b, err); // Add the coupling to the QPU
+                    qpu.add_coupling(b, a, err); // Add the coupling to the QPU
                 }
             }
         }
 
+        // Return the QuantumQuantizer
         Self {
-            qpu,
-            calibration: calibration.clone(),
+            qpu,                              // The quantum processing unit to use for quantization
+            calibration: calibration.clone(), // Calibration data for the QPU
         }
     }
 
+    // Quantize a circuit
     pub fn quantize(&mut self, circ: &PhiCircuit) -> anyhow::Result<(PhiCircuit, f64)> {
         // For now the optimizer is identity; return integrated obstruction S_X.
-        let integrated_obstruction = crate::cost::integrated_obstruction(circ, &self.qpu);
-        Ok((circ.clone(), integrated_obstruction))
+        let integrated_obstruction = crate::cost::integrated_obstruction(circ, &self.qpu); // Calculate the integrated obstruction
+        Ok((circ.clone(), integrated_obstruction)) // Return the optimized circuit and the integrated obstruction
     }
 
+    // Quantize a circuit with BMS observable
     pub fn quantize_with_bms(
         &mut self,
         circ: &PhiCircuit,
         route: EscapeRoute,
     ) -> anyhow::Result<(PhiCircuit, f64, BMSObservable)> {
-        let (optimized, sx) = self.quantize(circ)?;
+        let (optimized, sx) = self.quantize(circ)?; // Quantize the circuit
         let (_entropy, bms_obs) =
-            crate::bms::probe_gravitational_memory(&optimized, &self.qpu, route);
-        Ok((optimized, sx, bms_obs))
+            crate::bms::probe_gravitational_memory(&optimized, &self.qpu, route); // Probe the gravitational memory
+        Ok((optimized, sx, bms_obs)) // Return the optimized circuit, the integrated obstruction, and the BMS observable
     }
 
     fn analyze_nonlocal_dynamics(&self, dt: f64, dissipator: f64) -> EntropicSubsystem {

@@ -1,3 +1,6 @@
+//! Copyright (c) 2026 Zeta Reticula Inc
+//! Licensed under the MIT License. See LICENSE for details.
+
 #[cfg(test)]
 mod bms_tests {
     use std::collections::HashMap;

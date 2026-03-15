@@ -1,3 +1,6 @@
+//! Copyright (c) 2026 Zeta Reticula Inc
+//! Licensed under the MIT License. See LICENSE for details.
+
 use nalgebra::DMatrix;
 use zeta_quantum::{compute_flux_sector, evolve_nonlocal_lindblad, von_neumann_entropy};
 
